@@ -49,11 +49,22 @@ class Word2VecCBOW(nn.Module):
             # Clip indices to valid range
             context = torch.clamp(context, 0, self.embeddings.num_embeddings - 1)
         
+        # Print shapes for debugging
+        print(f"Context shape: {context.shape}")
+        
         embedded = self.embeddings(context)
-        # Add shape validation
-        if embedded.dim() != 3:
-            print(f"Unexpected embedding shape: {embedded.shape}")
-        embedded = embedded.mean(dim=1)
+        print(f"Embedded shape before mean: {embedded.shape}")
+        
+        # Ensure we have the correct number of dimensions
+        if embedded.dim() == 2:
+            # If we have a 2D tensor, unsqueeze to add batch dimension
+            embedded = embedded.unsqueeze(0)
+            print(f"Embedded shape after unsqueeze: {embedded.shape}")
+        
+        # Take mean along the correct dimension
+        embedded = torch.mean(embedded, dim=1)
+        print(f"Embedded shape after mean: {embedded.shape}")
+        
         out = self.linear(embedded)
         return out
 
@@ -93,6 +104,9 @@ class CBOWDataset(Dataset):
 
     def __getitem__(self, idx):
         context, target = self.data[idx]
+        # Ensure context is a list of integers
+        context = [int(x) for x in context]
+        target = int(target)
         return torch.tensor(context, dtype=torch.long), torch.tensor(target, dtype=torch.long)
 
 if __name__ == '__main__':
