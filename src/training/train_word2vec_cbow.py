@@ -43,7 +43,17 @@ class Word2VecCBOW(nn.Module):
         self.linear = nn.Linear(embedding_dim, vocab_size)
 
     def forward(self, context):
-        embedded = self.embeddings(context).mean(dim=1)
+        # Add validation for context indices
+        if torch.any(context >= self.embeddings.num_embeddings):
+            print(f"Invalid index found: max index {context.max()}, vocab size {self.embeddings.num_embeddings}")
+            # Clip indices to valid range
+            context = torch.clamp(context, 0, self.embeddings.num_embeddings - 1)
+        
+        embedded = self.embeddings(context)
+        # Add shape validation
+        if embedded.dim() != 3:
+            print(f"Unexpected embedding shape: {embedded.shape}")
+        embedded = embedded.mean(dim=1)
         out = self.linear(embedded)
         return out
 
@@ -53,7 +63,8 @@ class CBOWDataset(Dataset):
         self.text = text
         self.context_size = context_size
         self.token_to_index = token_to_index
-        self.unk = token_to_index.get("<UNK>")
+        self.unk = token_to_index.get("<UNK>", 0)  # Default to 0 if UNK not found
+        self.vocab_size = len(token_to_index)
         self.data = self.create_cbow_data()
 
     def create_cbow_data(self):
@@ -64,11 +75,16 @@ class CBOWDataset(Dataset):
             for i in range(self.context_size, len(self.text) - self.context_size):
                 context = [self.token_to_index.get(token, self.unk) for token in self.text[i - self.context_size:i] + self.text[i + 1:i + self.context_size + 1]]
                 target = self.token_to_index.get(self.text[i], self.unk)
+                
+                # Validate indices
+                if any(idx >= self.vocab_size for idx in context) or target >= self.vocab_size:
+                    print(f"Invalid index found: context {context}, target {target}, vocab size {self.vocab_size}")
+                    continue
+                    
                 if len(context) == 2 * self.context_size and target is not None:
                     data.append((context, target))
                 if i % 1000 == 0:
                     pbar.update(1000)
-                    pbar.update(len(self.text) % 100)  # Update remaining iterations
         print("CBOW data creation complete.")
         return data
 
