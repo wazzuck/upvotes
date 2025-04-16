@@ -1,3 +1,5 @@
 datasets
 torch
 wandb
+python-dotenv
+psycopg2
