@@ -43,30 +43,42 @@ class Word2VecCBOW(nn.Module):
         self.linear = nn.Linear(embedding_dim, vocab_size)
 
     def forward(self, context):
-        # Add validation for context indices
-        if torch.any(context >= self.embeddings.num_embeddings):
-            print(f"Invalid index found: max index {context.max()}, vocab size {self.embeddings.num_embeddings}")
-            # Clip indices to valid range
-            context = torch.clamp(context, 0, self.embeddings.num_embeddings - 1)
-        
-        # Print shapes for debugging
-        print(f"Context shape: {context.shape}")
-        
-        embedded = self.embeddings(context)
-        print(f"Embedded shape before mean: {embedded.shape}")
-        
-        # Ensure we have the correct number of dimensions
-        if embedded.dim() == 2:
-            # If we have a 2D tensor, unsqueeze to add batch dimension
-            embedded = embedded.unsqueeze(0)
-            print(f"Embedded shape after unsqueeze: {embedded.shape}")
-        
-        # Take mean along the correct dimension
-        embedded = torch.mean(embedded, dim=1)
-        print(f"Embedded shape after mean: {embedded.shape}")
-        
-        out = self.linear(embedded)
-        return out
+        try:
+            # Add validation for context indices
+            if torch.any(context >= self.embeddings.num_embeddings):
+                print(f"Invalid index found: max index {context.max()}, vocab size {self.embeddings.num_embeddings}")
+                # Clip indices to valid range
+                context = torch.clamp(context, 0, self.embeddings.num_embeddings - 1)
+            
+            # Print shapes for debugging
+            print(f"Context shape: {context.shape}")
+            
+            # Get embeddings
+            embedded = self.embeddings(context)
+            print(f"Embedded shape before mean: {embedded.shape}")
+            
+            # Reshape if necessary
+            if embedded.dim() == 2:
+                # Add batch dimension if missing
+                embedded = embedded.unsqueeze(0)
+            elif embedded.dim() == 3:
+                # Transpose to get correct dimensions for mean
+                embedded = embedded.transpose(1, 2)
+            
+            print(f"Embedded shape before mean: {embedded.shape}")
+            
+            # Take mean along the correct dimension
+            embedded = torch.mean(embedded, dim=2)  # Changed from dim=1 to dim=2
+            print(f"Embedded shape after mean: {embedded.shape}")
+            
+            out = self.linear(embedded)
+            return out
+            
+        except Exception as e:
+            print(f"Error in forward pass: {str(e)}")
+            print(f"Context shape: {context.shape if 'context' in locals() else 'Not available'}")
+            print(f"Embedded shape: {embedded.shape if 'embedded' in locals() else 'Not available'}")
+            raise
 
 # Define a custom dataset for CBOW
 class CBOWDataset(Dataset):
@@ -107,7 +119,10 @@ class CBOWDataset(Dataset):
         # Ensure context is a list of integers
         context = [int(x) for x in context]
         target = int(target)
-        return torch.tensor(context, dtype=torch.long), torch.tensor(target, dtype=torch.long)
+        # Create tensor with proper shape
+        context_tensor = torch.tensor(context, dtype=torch.long).view(-1)  # Ensure 1D tensor
+        target_tensor = torch.tensor(target, dtype=torch.long)
+        return context_tensor, target_tensor
 
 if __name__ == '__main__':
     # 1. Load tokens
