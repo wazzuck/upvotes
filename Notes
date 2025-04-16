@@ -1,0 +1,38 @@
+Notes
+
++---------------------------------------------------+
+| 1. Data Extraction                                |
+| src/utils/run_query_and_save_csv.py               |
+| (Extracts data from DB to CSV using SQL)          |
++-----------------------------+---------------------+
+                              |
+                              v
++-----------------------------+---------------------+
+| 2. Tokenization & Indexing                        |
+| src/training/create_tokeniser.py                  |
+| (Creates token-to-index and index-to-token files) |
++-----------------------------+---------------------+
+                              |
+                              v
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+I THINK THAT THIS PART IS REDUNDANT
++-----------------------------+---------------------+
+| 3. Word Frequency Filtering/Preparation           |
+| src/scripts/train_word2vect.py                    |
+| (Filters tokens, saves filtered tokens)           |
++-----------------------------+---------------------+
+                              |
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+                              v
++-----------------------------+---------------------+
+| 4. Model Training (Word2Vec, etc.)                |
+| src/training/train_word2vec_library.py            |
+| src/training/train_word2vec_cbow.py               |
+| (Trains embedding models)                         |
++-----------------------------+---------------------+
