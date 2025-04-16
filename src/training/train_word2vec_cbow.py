@@ -124,7 +124,7 @@ if __name__ == '__main__':
                 context, target = context.to(device, non_blocking=True), target.to(device, non_blocking=True)
                 optimizer.zero_grad()
                 if scaler:  # Mixed precision training
-                    with torch.amp.autocast():
+                    with torch.amp.autocast(device_type='cuda'):
                         output = model(context)
                         loss = criterion(output, target)
                     scaler.scale(loss).backward()

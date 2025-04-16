@@ -1,38 +1,61 @@
-Notes
+Hacker News Upvote Predictor - Script Execution Order
+===================================================
 
-+---------------------------------------------------+
-| 1. Data Extraction                                |
-| src/utils/run_query_and_save_csv.py               |
-| (Extracts data from DB to CSV using SQL)          |
-+-----------------------------+---------------------+
-                              |
-                              v
-+-----------------------------+---------------------+
-| 2. Tokenization & Indexing                        |
-| src/training/create_tokeniser.py                  |
-| (Creates token-to-index and index-to-token files) |
-+-----------------------------+---------------------+
-                              |
-                              v
+1. Initial Setup
+   -------------
+   ./setup.sh --cpu  # Install CPU dependencies
+   # OR
+   ./setup.sh --gpu  # Install GPU dependencies
 
+2. Data Extraction & Processing
+   ---------------------------
+   python src/utils/retrieve_table_schema.py
+   python src/utils/run_query_and_save_csv.py
+   python src/utils/eda.py
 
+3. Word2Vec Training (Choose ONE)
+   -----------------------------
+   Option A: python src/training/train_word2vec_cbow.py
+   Option B: python src/training/train_word2vec_skipgram.py
+   Option C: python src/training/train_word2vec_library.py
+   Option D: python src/training/train_word2vect.py
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-I THINK THAT THIS PART IS REDUNDANT
-+-----------------------------+---------------------+
-| 3. Word Frequency Filtering/Preparation           |
-| src/scripts/train_word2vect.py                    |
-| (Filters tokens, saves filtered tokens)           |
-+-----------------------------+---------------------+
-                              |
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+4. Tokenization
+   -----------
+   python src/training/create_tokeniser.py
+   python src/training/tokenise_dataset.py
 
+5. Testing
+   -------
+   python src/utils/test_word2vec_cbow.py
+   python src/utils/test_word2vec_library.py
 
+Flow Diagram:
+============
+[Setup] --> [Data Extraction] --> [Word2Vec Training] --> [Tokenization] --> [Testing]
+   |            |                     |                      |                 |
+   v            v                     v                      v                 v
+Install     Extract DB        Train Word2Vec          Create & Apply     Test Models
+Deps        Schema & Data     (Choose 1 method)        Tokenizer
 
-                              v
-+-----------------------------+---------------------+
-| 4. Model Training (Word2Vec, etc.)                |
-| src/training/train_word2vec_library.py            |
-| src/training/train_word2vec_cbow.py               |
-| (Trains embedding models)                         |
-+-----------------------------+---------------------+
+Prerequisites:
+=============
+1. .env file with database credentials:
+   DB_IP=178.156.142.230
+   DB_PORT=5432
+   DB_NAME=hd64m1ki
+   TABLE_NAME=hd64m1ki
+   USERNAME=postgres
+   PASSWORD=postgres
+
+2. Required directory structure:
+   data/
+   ├── raw/           # For database extracts
+   └── processed/     # For cleaned datasets and embeddings
+
+Notes:
+======
+- Each step depends on successful completion of previous steps
+- Choose only ONE Word2Vec training method
+- Ensure all dependencies are installed before starting
+- Check .env file exists with correct credentials
