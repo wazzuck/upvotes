@@ -244,8 +244,6 @@ if __name__ == '__main__':
     vocab_size = len(token_to_index)
     embedding_dim = 200
 
-    exit()
-
     # 5. Set up device and move model to GPU if available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
