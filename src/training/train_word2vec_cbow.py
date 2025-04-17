@@ -92,47 +92,25 @@ class Word2VecCBOW(nn.Module):
     def forward(self, context):
         """
         Forward pass of the CBOW model.
-        
-        Process:
-        1. Convert context word indices to embeddings
-        2. Average the context embeddings
-        3. Project to vocabulary size for prediction
-        
-        Args:
-            context: Tensor of shape [batch_size, context_size] containing word indices
-        
-        Returns:
-            Tensor: Logits for predicting the target word
         """
         try:
             # Validate context indices are within vocabulary range
-            if torch.any(context >= self.embeddings.num_embeddings):
-                print(f"Invalid index found: max index {context.max()}, vocab size {self.embeddings.num_embeddings}")
-                context = torch.clamp(context, 0, self.embeddings.num_embeddings - 1)
-            
-            # Print min and max context indices for debugging
-            print(f"Context indices range: min={context.min()}, max={context.max()}")
-            
-            print(f"Context shape: {context.shape}")
-            
+            if torch.any(context >= self.embeddings.num_embeddings) or torch.any(context < 0):
+                print(f"Invalid context indices detected: min={context.min()}, max={context.max()}, vocab_size={self.embeddings.num_embeddings}")
+                context = torch.clamp(context, 0, self.embeddings.num_embeddings - 1)  # Clamp to valid range
+
             # Convert word indices to embeddings
             embedded = self.embeddings(context)
-            print(f"Embedded shape before mean: {embedded.shape}")
-            
-            # Ensure proper tensor dimensions
-            if embedded.dim() == 2:
-                embedded = embedded.unsqueeze(0)
-            
-            print(f"Embedded shape before mean: {embedded.shape}")
-            
-            # Average context embeddings
-            embedded = torch.mean(embedded, dim=2)
-            print(f"Embedded shape after mean: {embedded.shape}")
-            
+            #print(f"Embedded shape before mean: {embedded.shape}")
+
+            # Average context embeddings along the context size dimension (dim=1)
+            embedded = torch.mean(embedded, dim=1)
+            #print(f"Embedded shape after mean: {embedded.shape}")
+
             # Project to vocabulary size for prediction
             out = self.linear(embedded)
             return out
-            
+
         except Exception as e:
             print(f"Error in forward pass: {str(e)}")
             print(f"Context shape: {context.shape if 'context' in locals() else 'Not available'}")
@@ -157,24 +135,14 @@ class CBOWDataset(Dataset):
         self.text = text
         self.context_size = context_size
         self.token_to_index = token_to_index
-        self.unk = token_to_index.get("<UNK>", 0)  # Default to 0 if UNK not found
+        self.unk = token_to_index.get("<UNK>", 0)  # Default to 0 if <UNK> is not found
         self.vocab_size = len(token_to_index)
         print(f"Vocabulary size: {self.vocab_size}")
         self.data = self.create_cbow_data()
 
     def create_cbow_data(self):
-        """
-        Creates context-target pairs for CBOW training.
-        For each word in the text, creates a pair of:
-        - Context: surrounding words
-        - Target: the word to predict
-        
-        Returns:
-            list: List of (context, target) pairs
-        """
         data = []
         print("Creating CBOW data...")
-        i = 0
         with tqdm(total=len(self.text), desc="Processing CBOW data") as pbar:
             for i in range(self.context_size, len(self.text) - self.context_size):
                 # Get context words (before and after target)
@@ -184,14 +152,16 @@ class CBOWDataset(Dataset):
                 target = self.token_to_index.get(self.text[i], self.unk)
                 
                 # Validate indices
-                if any(idx >= self.vocab_size for idx in context) or target >= self.vocab_size:
-                    print(f"Invalid index found: context {context}, target {target}, vocab size {self.vocab_size}")
+                context = [max(0, min(idx, self.vocab_size - 1)) for idx in context]
+                target = max(0, min(target, self.vocab_size - 1))
+                
+                if any(idx >= self.vocab_size or idx < 0 for idx in context) or target >= self.vocab_size or target < 0:
+                    print(f"Invalid index found: context={context}, target={target}, vocab_size={self.vocab_size}")
                     continue
                     
                 if len(context) == 2 * self.context_size and target is not None:
                     data.append((context, target))
-                if i % 1000 == 0:
-                    pbar.update(1000)
+                pbar.update(1)
         print(f"CBOW data creation complete. Total samples: {len(data)}")
         return data
 
@@ -268,6 +238,10 @@ if __name__ == '__main__':
                 
                 # Move data to device
                 context, target = context.to(device, non_blocking=True), target.to(device, non_blocking=True)
+                
+                # Validate target indices are within vocabulary range
+                if torch.any(target >= vocab_size) or torch.any(target < 0):
+                    print(f"Invalid target indices detected: min={target.min()}, max={target.max()}, vocab_size={vocab_size}")
                 
                 # Forward pass
                 optimizer.zero_grad()
