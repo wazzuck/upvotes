@@ -61,14 +61,11 @@ class Word2VecCBOW(nn.Module):
             if embedded.dim() == 2:
                 # Add batch dimension if missing
                 embedded = embedded.unsqueeze(0)
-            elif embedded.dim() == 3:
-                # Transpose to get correct dimensions for mean
-                embedded = embedded.transpose(1, 2)
             
             print(f"Embedded shape before mean: {embedded.shape}")
             
-            # Take mean along the correct dimension
-            embedded = torch.mean(embedded, dim=2)  # Changed from dim=1 to dim=2
+            # Take mean along the context dimension (dim=2)
+            embedded = torch.mean(embedded, dim=2)  # Average across context words
             print(f"Embedded shape after mean: {embedded.shape}")
             
             out = self.linear(embedded)

@@ -12,6 +12,16 @@ Hacker News Upvote Predictor - Script Execution Order
    python src/utils/retrieve_table_schema.py
    python src/utils/run_query_and_save_csv.py
    python src/utils/eda.py
+   
+
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   Should tokenisation happen before word2vec? Yes - I think so.
+
+4. Tokenization
+   -----------
+   python src/training/create_tokeniser.py
+   python src/training/tokenise_dataset.py
+
 
 3. Word2Vec Training (Choose ONE)
    -----------------------------
@@ -20,15 +30,12 @@ Hacker News Upvote Predictor - Script Execution Order
    Option C: python src/training/train_word2vec_library.py
    Option D: python src/training/train_word2vect.py
 
-4. Tokenization
-   -----------
-   python src/training/create_tokeniser.py
-   python src/training/tokenise_dataset.py
 
 5. Testing
    -------
    python src/utils/test_word2vec_cbow.py
    python src/utils/test_word2vec_library.py
+
 
 Flow Diagram:
 ============
@@ -59,3 +66,19 @@ Notes:
 - Choose only ONE Word2Vec training method
 - Ensure all dependencies are installed before starting
 - Check .env file exists with correct credentials
+
+
+
+
+
+From Bes
+
+Train cbow with wiki8 word base and then upload to huggingface
+
+Focus on Text8
+
+Word2Vec / Weight Hugging Face / Embeddings
+
+PCA - Clusting
+
+Saves headache of moving between CPU/GPU
