@@ -14,6 +14,10 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 import time
 from tqdm import tqdm
+import os
+
+# Set CUDA_LAUNCH_BLOCKING for synchronous execution to help debug CUDA errors
+os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 
 def load_tokeniser(token_to_index_filepath, index_to_token_filepath):
     """
@@ -236,6 +240,8 @@ if __name__ == '__main__':
     print("Initializing model...")
     vocab_size = len(token_to_index)
     embedding_dim = 200
+
+    exit()
 
     # 5. Set up device and move model to GPU if available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
