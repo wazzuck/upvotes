@@ -110,6 +110,9 @@ class Word2VecCBOW(nn.Module):
                 print(f"Invalid index found: max index {context.max()}, vocab size {self.embeddings.num_embeddings}")
                 context = torch.clamp(context, 0, self.embeddings.num_embeddings - 1)
             
+            # Print min and max context indices for debugging
+            print(f"Context indices range: min={context.min()}, max={context.max()}")
+            
             print(f"Context shape: {context.shape}")
             
             # Convert word indices to embeddings
