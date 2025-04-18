@@ -2,4 +2,5 @@ datasets
 torch
 wandb
 python-dotenv
-psycopg2
+gensim
+psycopg2-binary

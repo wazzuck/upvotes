@@ -1,3 +1,28 @@
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Hacker News Upvote Predictor - Script Execution Order
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Notes from Bes
+
+Train cbow with wiki8 word base and then upload to huggingface
+
+Focus on Text8
+
+Word2Vec / Weight Hugging Face / Embeddings
+
+PCA - Clusting
+
+Saves headache of moving between CPU/GPU
+
+
+
+
+
+
+
+
+
 Hacker News Upvote Predictor - Script Execution Order
 ===================================================
 
